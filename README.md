@@ -27,24 +27,24 @@ The file main.c it gives you a small but very usefull set of commands:<br>
 
 ![Schermata del 2024-01-23 15-03-34](https://github.com/jurhas/mparser/assets/11569832/20e3263c-209c-41f7-a772-37d6f0a1a0bf)
 
-First of all It allows you to test the grammar from shell, that is very quick. Since the new line can be part of the sintax to accept the input you have to digit twice enter.<br>
-With the option \a it translates the .egt file to a C array so you do not need to carry around the file anymore,and it defines the function <br>
-mParser * new_mParser() without argunments<br> 
+First of all It allows you to test the grammar from shell, that is very fast. Since that the new line can be part of the sintax to accept the input you have to digit twice enter.<br>
+With the option \a it translates the .egt file to a C array so you do not need to carry around the file anymore,and it defines the function <br><br>
+mParser * new_mParser()<br><br> without argunments<br> 
 With the .option \s create a skeleton program, customizable, where you can define return value. arguments and code insdide.<br>
 With the option \l you can load again the file.<br>
 The other are less important, you can see them launching \h .<br>
 
 <h3>dhash usage </h3>
-The files dhash.c and dhash.h are a debug tool usefull to check if you handle correctly the memory and avoid memory leakage. To use them just in other applications just #include "dhash.h" in your root .h file and in the same file to define the macros: <br>
+The files dhash.c and dhash.h are a debug tool usefull to check if you handle correctly the memory and avoid memory leakage. To use them in other applications just #include "dhash.h" in your root .h file and in the same file define the macros: <br><br>
 
-#ifdef DHASH_H_INCLUDED
-#define malloc(a) dmalloc(a,__FILE__, __LINE__)
-#define calloc(a,b) dcalloc(a,b,__FILE__, __LINE__)
-#define realloc(a,b) drealloc(a,b,__FILE__, __LINE__)
-#define free(a) dfree(a)
-#define strdup(a) dstrdup(a,__FILE__, __LINE__)
-#define wcsdup(a) dwcsdup(a,__FILE__, __LINE__)
-#endif
+#ifdef DHASH_H_INCLUDED<br>
+#define malloc(a) dmalloc(a,__FILE__, __LINE__)<br>
+#define calloc(a,b) dcalloc(a,b,__FILE__, __LINE__)<br>
+#define realloc(a,b) drealloc(a,b,__FILE__, __LINE__)<br>
+#define free(a) dfree(a)<br>
+#define strdup(a) dstrdup(a,__FILE__, __LINE__)<br>
+#define wcsdup(a) dwcsdup(a,__FILE__, __LINE__)<br>
+#endif<br><br>
 
 
 After this , the first row in the main() function must be:<br>
@@ -54,7 +54,7 @@ dend();<br>
 And it checks if you freed correctly all the memory.<br>
 
 <h3>Further libraries</h3>
-In mparser there are also other three libraries, an hashtable, a 8 byte string, and 16 byte string. 4 I forgot the stack.<br>
+In mparser.c there are also other three libraries, an hashtable, a 8 byte string, and 16 byte string. 4 I forgot the stack.<br>
 The one a bit more sofisticated is the hashtable, also designed to be fast and cover a very huge ammount of situations.To create it:<br>
 
 mHashtable * new_mHashtable(size_t start_size, mhash_f hsh_f,mcmp_f cmp_f); <br>
@@ -64,7 +64,7 @@ where mhash_f and mcmp_f are mandatory functions typedef'ed as:<br>
 typedef size_t (*mhash_f)(mValue*);<br>
 typedef int (*mcmp_f)(mValue *a, mValue *b);<br>
 
-be carefull that the arguments are the union mValue. The first computes the hash and the second compare them as usual, with hash of course I just need to know if is equal or less, but once I wrote it I cover each combination.<br>
+be carefull that the arguments are the union mValue. The first computes the hash and the second compare them as usual, with the hashtable, I just need to know if it is equal or less, but once I wrote it I cover each combination.<br>
 After you create the hashtable set the flags as required with the member h->flags :<br>
 typedef enum mhsh_flags<br>
 {<br>
