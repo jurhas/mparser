@@ -5,7 +5,7 @@ mparser is a parser engine for  <a href="http://www.goldparser.org/">Gold Parser
 The reason to write a new engine was that I need an engine that works with UTF-8, with a complete error handling and that can read the .egt files.<br>
 Since that .egt files is wrote in UNICODE, with small effort was possible support both coding.<br>
 To switch from a code to the other just change the 12th row of the file mparser.h, the macro MP_CODING set  it to MP_UTF8 or to MP_UNICODE.<br>
-##Usage mparser
+## Usage mparser
   The engine is composed only from the files mparser.h and mparser.c. You just need this two files, and remove the line #include "dhash.h" . <br>
 You have to create a parser with one of the follows:<br>
 ```
@@ -26,7 +26,7 @@ After you have created the mParser object, just call mpExec(...) declared as fol
 ```
 The second argument changes with the coding. I did not implement the xxxxF version with UNICODE  since there are too many variables, big-endian, small-endian, with BOM or without.<br>
 The output tree is the member mp->out_tree in the mParser object. To get a hint look for the function print_tree(...) in the main.c file.<br>
-###Usage main.c
+## Usage main.c
 The file main.c it gives you a small but very usefull set of commands:<br>
 
 ![Schermata del 2024-01-23 15-03-34](https://github.com/jurhas/mparser/assets/11569832/20e3263c-209c-41f7-a772-37d6f0a1a0bf)
@@ -41,7 +41,7 @@ With the .option \s create a skeleton program, customizable, where you can defin
 With the option \l you can load again the file.<br>
 The other are less important, you can see them launching \h .<br>
 
-###dhash usage 
+## usage dhash  
 The files dhash.c and dhash.h are a debug tool usefull to check if you handle correctly the memory and avoid memory leakage. To use them in other applications just #include "dhash.h" in your root .h file and in the same file define the macros: <br><br>
 ```
 #ifdef DHASH_H_INCLUDED
@@ -65,7 +65,7 @@ dend();
 ```
 And it checks if you freed correctly all the memory.<br>
 To avoid to put hand after you remove the dhash library, maybe you can enclose the inside the #ifdef as the macros above.
-###Further libraries
+## Further libraries
 In mparser.c there are also other three libraries, an hashtable, a 8 byte string, and 16 byte string. 4 I forgot the stack.<br>
 The one a bit more sofisticated is the hashtable, also designed to be fast and cover a very huge ammount of situations.To create it:<br>
 ```
