@@ -54,8 +54,8 @@ dend();<br>
 And it checks if you freed correctly all the memory.<br>
 
 <h3>Further libraries</h3>
-In mparser there are also other three libraries, an hashtable, a 8 byte string, and 16 byte string.<br>
-The hashtable is also designed to be fast and cover a very huge ammount of situations.To create it:<br>
+In mparser there are also other three libraries, an hashtable, a 8 byte string, and 16 byte string. 4 I forgot the stack.<br>
+The one a bit more sofisticated is the hashtable, also designed to be fast and cover a very huge ammount of situations.To create it:<br>
 
 mHashtable * new_mHashtable(size_t start_size, mhash_f hsh_f,mcmp_f cmp_f); <br>
 
@@ -65,7 +65,7 @@ typedef size_t (*mhash_f)(mValue*);<br>
 typedef int (*mcmp_f)(mValue *a, mValue *b);<br>
 
 be carefull that the arguments are the union mValue. The first computes the hash and the second compare them as usual, with hash of course I just need to know if is equal or less, but once I wrote it I cover each combination.<br>
-After you create the hashtable set the flags as require with the member h->flags :<br>
+After you create the hashtable set the flags as required with the member h->flags :<br>
 typedef enum mhsh_flags<br>
 {<br>
     MHSH_STRDUP_KEY= (1<<0),<br>
@@ -79,13 +79,14 @@ typedef enum mhsh_flags<br>
     MSHS_FREE_STR_KEY_ON_DESTROY=(1<<8),<br>
     MSHS_FREE_STR_VALUE_ON_DESTROY=(1<<9)<br>
 }MHSH_FLAGS;<br>
-And you are done with the creation. There is only an exception if you choose the flags MHSH_DESTROY_KEY_ON_POP,MHSH_DESTROY_VALUE_ON_POP you have to set the member ->fk_f and ->fv_f that contains the functions to destroy key and/or value.<br>  
-To avoid the traditional C functions that cover each combination of types of key and value, you have to set key and value with the members: ->i_key and  ->i_val then launch one of the follow:<br>
+And you are done with the creation. There is only an exception if you choose the flags MHSH_DESTROY_KEY_ON_POP,MHSH_DESTROY_VALUE_ON_POP you have to set the member h->fk_f and h->fv_f that contains the functions to destroy key and/or value. When you destroy the hashtable you have to give again these functions.If required of course, or set them to NULL.<br>  
+To avoid the traditional C functions for each combination of types of key and value, you have to set key and value with the members: h->i_key and  h->i_val then launch one of the follow:<br>
 MHSH_RES_VALUE mhash_insert(mHashtable * htbl);<br>
 MHSH_RES_VALUE mhash_get(mHashtable * htbl);<br>
 MHSH_RES_VALUE mhash_pop(mHashtable * htbl);<br>
-as you can see they have as only argument the hashtable.  To get the output you have to look in the members ->o_key and ->o_val. Be carefull that these members refer to the location in the memory, it is not a copy. Also the insert function set the output members, w ith the new position if not exists and return MHSH_OK otherwise set the output with the existing one and returns MHSH_ERR_EXISTS.<br>
-In this 
+as you can see they have as only argument the hashtable.  To get the output you have to look in the members h->o_key and h->o_val. Be carefull that these members refer to the location in the memory, it is not a copy. Also the insert function set the output members, with the position of the new insert item if not exists and return MHSH_OK otherwise set the output with the existing one and returns MHSH_ERR_EXISTS. So with insert and get you cannot modify the o_key or nobody will find it anymore.<br>
+If you need an hint there is the function test_hash_tbl() in the main.c file.<br>
+With the combination of the union, flags and errors it is possible to cover practically each requirement, better also then C++ with just three functons. And of course stunning perfomrmance since you have not to call contains and the memory allocation is also very fast.<br> 
 
 
 
