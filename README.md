@@ -25,6 +25,7 @@ After you have created the mParser object, just call mpExec(...) declared as fol
 #endif
 ```
 The second argument changes with the coding. I did not implement the xxxxF version with UNICODE  since there are too many variables, big-endian, small-endian, with BOM or without.<br>
+If some error occurs the error message is available in the member mp->err_msg and error number is available as return value and also in the member mp->err_n. The error message is not to free.<br>
 The output tree is the member mp->out_tree in the mParser object. To get a hint look for the function print_tree(...) in the main.c file.<br>
 ## Usage main.c
 The file main.c it gives you a small but very usefull set of commands:<br>
