@@ -53,8 +53,6 @@ The files dhash.c and dhash.h are a debug tool usefull to check if you handle co
 #define wcsdup(a) dwcsdup(a,__FILE__, __LINE__)
 #endif
 ```
-Where FILE and LINE are the C macro _ _ FILE _ _ and _ _ LINE _ _ but is the same shortcut for the bold. Just copy the set of instructions from mparser.h at line 179.<br>
-
 After this , the first row in the main() function must be:<br>
 ```
 dstart();
