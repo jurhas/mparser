@@ -4,7 +4,7 @@ Parser Engine for Gold Parser
 mparser is a parser engine for  <a href="http://www.goldparser.org/">Gold Parser</a> , wrote in ANSI C. So should work with every OS.  Designed to be light-weight and fast.<br>
 The reason to write a new engine was that I need an engine that works with UTF-8, with a complete error handling and that can read the .egt files.<br>
 Since that .egt files are written in UNICODE, with small effort was possible to support both coding.<br>
-To switch from a code to the other just change the 12th row of the file mparser.h, the macro MP_CODING set  it to MP_UTF8 or to MP_UNICODE.<br>
+To switch from a code to the other just change the 12th row of the file mparser.h, the macro MP_CODING set it to MP_UTF8 or to MP_UNICODE.<br>
 ## Usage mparser
   The engine is composed only from the files mparser.h and mparser.c. You just need these two files, and remove the line #include "dhash.h" . <br>
 You have to create a parser with one of the follows:<br>
@@ -63,9 +63,15 @@ and the last row:<br>
 dend();
 ```
 And it checks if you freed correctly all the memory.<br>
-To avoid putting hand after you remove the dhash library, maybe you can enclose these instructions inside the #ifdef DHASH_H_INCLUDED as the macros above.
+To avoid putting hand after you remove the dhash library, maybe you can enclose these instructions inside the #ifdef DHASH_H_INCLUDED as the macros above.<br>
+Some compilers set the macro  `__FILE__` to the whole path, in Windows becomes crazy, C:/users......./codebcloks.../myfile.c , to set to a more reasonable name in the first row of your .c files put the macro:
+
+```
+#line 2 "yourfilename.c"
+```
+get a look to the first row of the file mparser.c.
 ## Further libraries
-In mparser.c there are other three libraries, an hashtable, a 8 byte string, and 16 byte string. 4 libraries I forgot the stack.<br>
+In mparser.c there are other three libraries, an hashtable, a 8 bit string and a 16 bit string. 4 libraries I forgot the stack.<br>
 The one a bit more sophisticated is the hashtable, also designed to be fast and cover a very huge amount of situations. To create it:<br>
 ```
 mHashtable * new_mHashtable(size_t start_size, mhash_f hsh_f,mcmp_f cmp_f); 
