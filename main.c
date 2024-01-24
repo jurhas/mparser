@@ -227,7 +227,7 @@ void format_valid_c_identifier(m8String *s)
     }
     *cur='\0';
 
-    s->n=len;
+    s->n=(size_t)cur-s->s;
 }
 FILE *  get_file_w( m8String *s)
 {
@@ -264,10 +264,7 @@ void create_skeleton(mParser * mp,m8String * s)
 {
   char * ret_val, *arg_list, *code_inside;
   m8String *decl, *jt,*def, *rl_name, *f_name;
-#if MP_CODING==MP_UNCODE
-#endif
   mHashtable *h;
-
   mRule *rl;
   mSymbol *sy;
   FILE *f;
@@ -281,7 +278,7 @@ void create_skeleton(mParser * mp,m8String * s)
 
   get_simple_input(s,"Get <ret_val>:",0);
   ret_val=strdup(s->s);
-  get_simple_input(s,"Get <arg_list>(bracket inclusive):",0);
+  get_simple_input(s,"Get <arg_list>(brackets inclusive):",0);
   arg_list=strdup(s->s);
   printf("Get <code_inside>(can be multi-line, remember the semicolon and the tabs, twice Enter to accept)\n");
   get_simple_input(s,">",1 );
@@ -297,15 +294,16 @@ void create_skeleton(mParser * mp,m8String * s)
 
 
     case 'q':
-        if (strcmp(s->s, "q"))
-            break;
+        free(ret_val);
+        free(arg_list);
+        free(code_inside);
+        return;
     case 'n':
     case 'N':
         free(ret_val);
         free(arg_list);
         free(code_inside);
-        if(*s->s=='n' || *s->s == 'N')
-            create_skeleton(mp, s);
+        create_skeleton(mp, s);
         return;
     default :
         break;
@@ -637,7 +635,7 @@ int test_hash_tbl()
                 }
             }
             t2=clock();
-            printf("Get %d items:%f\n",sz,F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
+            printf("Get %d items:%f sec\n",sz,F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
             t1=clock();
             for(i=0;i<ht->tblsz;i++)
             {
@@ -655,7 +653,7 @@ int test_hash_tbl()
                 conf->o_val->ull++;
             }
             t2=clock();
-            printf("Conflict study:%f\n",F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
+            printf("Conflict study:%f sec\n",F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
             for(i=0;i<conf->lstn;i++)
             {
                 printf("%d rows have %d collisions\n",
@@ -693,7 +691,7 @@ int test_hash_tbl()
                 }
             }
             t2=clock();
-            printf("Pop %d items:%f\n",sz,F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
+            printf("Pop %d items:%f sec\n",sz,F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
 ERR1:
         for(i=0;i<sz;i++)
             free(buf[i]);
@@ -893,7 +891,6 @@ void get_str(m8String *s, char *prompt)
     m8s_reset(s);
     printf("%s>",prompt);
 
-    //ReadConsoleW(mstdin->sio,wcurs,rdcnt,&cNumRead,NULL)
     while( (c=(char)getchar() )  )
     {
         if(c=='\n' && nl_twice)
@@ -922,13 +919,14 @@ void print_help()
     printf("Digit twice Enter to accept input\n");
     printf("\\q to quit\n");
     printf("\\a translate the .egt file to a C array, therefore defines the function new_mParser() without arguments\n");
-    printf("\\i <namefile>to execute a file\n");
+    printf("\\i <namefile> to execute a file\n");
     printf("\\l to load the tables again\n");
     printf("\\l <namefile>to load another tables \n");
     printf("\\n to navigate node by node\n");
     printf("\\o displays the last tree again\n");
     printf("\\o <namefile> saves the last tree in a file\n");
-    printf("\\t benchmark the program\n");
+	printf("\\s create a skeleton program\n");
+	printf("\\t benchmark the program\n");
     printf("\\h help\n");
 }
 int get_choose(m8String *s,char * prompt, int max)
@@ -1191,12 +1189,12 @@ void mainloop(mParser ** smp,m8String *s, char **fn )
 
 int main()
 {
-    dstart();
-
-
+#ifdef DHASH_H_INCLUDED    
+	dstart();
+#endif
 #ifdef _WIN32
-SetConsoleCP(CP_UTF8);
-SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
+	SetConsoleOutputCP(CP_UTF8);
 #endif
     mParser *mp=NULL;
     clock_t t1,t2;
@@ -1205,9 +1203,7 @@ SetConsoleOutputCP(CP_UTF8);
     int c,new_fname=0;
     char *fname;
     m8String* s = new_m8String();
-    //setlocale(LC_ALL, "");
-
-
+    
     printf("Digit twice Enter to accept input\n");
     printf("\\h To help\n");
     f=fopen(MP_LAST_FILE,"r" );
@@ -1245,7 +1241,7 @@ SetConsoleOutputCP(CP_UTF8);
         }
         if(err_n!=MP_OK) print_err(err_n);
         if(mp)
-            printf("Load File: %f\n",F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
+            printf("Load File: %f secs\n",F_PAT_TYPE(t2-t1)/CLOCKS_PER_SEC);
         else
             printf("Without a valid .egt file, the program cannot continue\n");
 
@@ -1265,9 +1261,9 @@ SetConsoleOutputCP(CP_UTF8);
     destroy_m8String(s);
     if(mp)
         destroy_mParser(mp);
-
+#ifdef DHASH_H_INCLUDED
     dend();
-    system("pause");
+#endif
 
     return 0;
 }
