@@ -64,6 +64,7 @@ dend();
 ```
 And it checks if you freed correctly all the memory.<br>
 To avoid putting hand after you remove the dhash library, maybe you can enclose these instructions inside the #ifdef DHASH_H_INCLUDED as the macros above.<br>
+If you use the Visual Studio safe version of strdup, or you use some library that allocates outside but you have to free() it in your code, you have to readress also these functions, otherwise dfree() allerts you that the pointer you want free() is not existing. I mean it is very simple just copy-paste an existing one and make your changes.<br>
 Some compilers set the macro  `__FILE__` to the whole path, in Windows becomes crazy, C:/users......./codebcloks.../myfile.c , to set to a more reasonable name in the first row of your .c files put the macro:
 
 ```
