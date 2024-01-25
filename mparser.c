@@ -430,15 +430,17 @@ char *m8s_concat(m8String *u8s, register const char *s,register size_t len)
 {
 	register char * a;
 	
-	if (u8s->n + len + 1 >= u8s->sz)
+	if (u8s->n + len + 1 >= u8s->sz) // I ever add one more so I sleep comfortably
 		if (!m8s_realloc(u8s, len))
 			return NULL;
 	a=u8s->s + u8s->n;
 	
-	while(len-- && (*a++=*s++))
-		;
+	while(len-- && (*a=*s))
+		++a,++s; //if s is shorter than len, a must no go further, so, no *a++=*s++
+	
 	u8s->n = a-u8s->s;
 	*a = '\0';
+	
 	return u8s->s;
 }
 char *m8s_concatc(m8String *u8s, char c)
@@ -614,8 +616,8 @@ mu16 *mU16s_concat(mU16String *u16s, register  const  mu16 *s, register size_t l
 			return NULL;
 
 	a=u16s->s + u16s->n;
-	while(len-- && (*a++ = *s++))
-		;
+	while(len-- && (*a = *s))
+		++a,++s;
 	
 	u16s->n = a-u16s->s;
 	*a = '\0';
