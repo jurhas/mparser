@@ -346,17 +346,13 @@ void create_skeleton(mParser *mp, m8String *s)
 		m8s_reset(f_name);
 
 		m8s_concatcm(f_name, 'R');
-
 		mUs_concatCurCodingS(f_name, mp->grm->sym[rl->NonTerminal].Name);
-
 		m8s_concatcm(f_name, '_');
 
 		m8s_concats(rl_name, "//");
 		m8s_concati(rl_name, i);
 		m8s_concats(rl_name, ") <");
-
 		mUs_concatCurCodingS(rl_name, mp->grm->sym[rl->NonTerminal].Name);
-
 		m8s_concats(rl_name, ">::=");
 
 		for (j = 0; j < rl->nsymbol; j++)
@@ -448,7 +444,6 @@ QUIT:
 	destroy_m8String(def);
 	destroy_m8String(rl_name);
 	destroy_m8String(f_name);
-	;
 
 	free(ret_val);
 	free(arg_list);
@@ -507,7 +502,7 @@ int load_fl(m8String *s)
 	fseek(f, 0, SEEK_END);
 	sz = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	m8s_realloc(s, sz);
+	m8s_realloc(s, sz+1);
 	fread(s->s, sizeof(char), sz, f);
 	s->n = sz;
 	s->s[s->n] = '\0';
