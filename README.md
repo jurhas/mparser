@@ -118,5 +118,18 @@ as you can see, they have as only argument the hashtable.  To get the output, yo
 	conf->o_val->ull++;
 ```
 In thise sample, I have an hashtable named `conf` (unsigned long long , unsigned long long), the key is count meanwhile the start value is 0. I insert it, I just check if there is a ROOM, and istantly grow the counter of the value. The result is that count the times a insert this key.<br> 
-If you need a hint, there is the function test_hash_tbl() in the main.c file.<br>
+The `for each`, I did not implement it, in my old hashtable I did but requires an additional member to remember where it is and it expose you to some bugs if you do not complete the whole `for each`. There are two possibilities, the faster is to run accross the buffer of the lists (member ->lst from 0 to ->lstn),  but you do not have to call the pop function, or if you did the 0 don't must be a valid key, so you can dectet the lacking fields with if(lst[i]->key.ull!=0). The safer version of `for each` is the follow:
+```
+for (i = 0; i < ht->tblsz; i++)
+{
+	mHList *tmp;
+	for (tmp = ht->tbl[i]; tmp; tmp = tmp->next)
+	{
+ 		//write your code here
+		tmp->value.ull++;
+ 	}
+}
+```
+If you do not partecipate to code competition and you need to gain 0.1 seconds with a load of 4 GB, is better use this one.<br>
+you need a hint, there is the function test_hash_tbl() in the main.c file.<br>
 With the combination of the union, flags and errors it is possible to cover practically each requirement, better also than C++ with just three functions. And of course stunning performance since you have not to call contains(), the memory allocation is also very fast because I allocate buffer and not single elements, you avoid useless strdup if you have for example your own allocator, the union mValue has also a small buffer of 8 charachters where fits perfectly an UTF-8 sequence (the size is defined as [sizeof(double)/sizeof(char)] should be 8 charachter, if you insert long double modify it consequently so you have more space for free,I memset'ed every where so the union can grow in size without any problem, better, if you use it in your code remember to memset, do not set just the bigger member to 0)   and with combination of factors you can optimize it for your needs.<br>
