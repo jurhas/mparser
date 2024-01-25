@@ -109,15 +109,15 @@ MHSH_RES_VALUE mhash_pop(mHashtable * htbl);
 as you can see, they have as only argument the hashtable.  To get the output, you have to look in the members h->o_key and h->o_val. Be careful that these members refer to the location in the memory, they are not a copy.  The insert function sets the output members too. If the new insert does not exist, set the output with the new position and  returns MHSH_OK otherwise set the output with the existing one and returns MHSH_ERR_EXISTS. So with insert and get you cannot modify the o_key or nobody will find it anymore. Meanwhile you can modify the o_val, ohhh if you can modify it, this was exactly the purpose to set the location of the memory, this allow to write code like this: <br>
 ```
         conf->i_key.ull = count;
-				conf->i_val.ull = 0;
-				if (mhash_insert(conf) == MHSH_RUN_OUT_OF_MEM)
-				{
-					printf("ROOM\n");
-					goto ERR1;
-				}
-				conf->o_val->ull++;
+	conf->i_val.ull = 0;
+	if (mhash_insert(conf) == MHSH_RUN_OUT_OF_MEM)
+	{
+		printf("ROOM\n");
+		goto ERR1;
+	}
+	conf->o_val->ull++;
 ```
 In thise sample, I have an hashtable named `conf` (unsigned long long , unsigned long long), the key is count meanwhile the start value is 0. I insert it, I just check if there is a ROOM, and istantly grow the counter of the value. The result is that count the times a insert this key.<br> 
-If you get scared that it leaves the possibility to put hands in the hearth of the code, may be you have to consider to learn Visual Basic and not C. This was exactly his purpose.<br> 
+If you get scared that it leaves the possibility to put hands in the hearth of the code, may be you have to consider to learn Visual Basic and not C. This was exactly the purpose of C.<br> 
 If you need a hint, there is the function test_hash_tbl() in the main.c file.<br>
 With the combination of the union, flags and errors it is possible to cover practically each requirement, better also than C++ with just three functions. And of course stunning performance since you have not to call contains(), the memory allocation is also very fast because I allocate buffer and not single elements, you avoid useless strdup if you have for example your own allocator, the union mValue has also a small buffer of 8 charachters where fits perfectly an UTF-8 sequence (the size is defined as [sizeof(double)/sizeof(char)] should be 8 charachter, if you insert long double modify it consequently so you have more space for free,I memset'ed every where so the union can grow in size without any problem, better, if you use it in your code remember to memset, do not set just the bigger member to 0)   and with combination of factors you can optimize it for your needs.<br>
