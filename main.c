@@ -1361,7 +1361,7 @@ int main()
 	SetConsoleOutputCP(CP_UTF8);
 #endif
 	//test_hash_tbl();
-	test_rep();
+	//test_rep();
 	mParser *mp = NULL;
 	clock_t t1, t2;
 	FILE *f;
