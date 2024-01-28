@@ -1,5 +1,6 @@
 #ifndef MPARSER_H_INCLUDED
 #define MPARSER_H_INCLUDED
+
 #include "dhash.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,36 +31,36 @@ typedef unsigned long long mull;
 typedef wchar_t mu16;
 
 typedef union _mval {
-    mll ll;
-    mull ull;
-    double d;
-    char *s;
-    char sbuf[sizeof(double) / sizeof(char)];
-    mu16 *ws;
-    mu16 wsbuf[sizeof(double) / sizeof(mu16)];
-    void *v;
+	mll ll;
+	mull ull;
+	double d;
+	char *s;
+	char sbuf[sizeof(double) / sizeof(char)];
+	mu16 *ws;
+	mu16 wsbuf[sizeof(double) / sizeof(mu16)];
+	void *v;
 } mValue;
 
-typedef void (*mfree_mvalue_f)(mValue *v);
+typedef void (*mfree_f)(void *v);
 
 typedef struct _mstack
 {
-    mValue *val;
-    size_t sz;
-    size_t n;
-    mValue io_val;
+	mValue *val;
+	size_t sz;
+	size_t n;
+	mValue io_val;
 } mStack;
 
 mStack *new_mStack(size_t start_size);
-void destroy_mStack(mStack *stk, mfree_mvalue_f fv);
+void destroy_mStack(mStack *stk, mfree_f fv);
 size_t mStack_push(mStack *stk);
 int mStack_pop(mStack *stk);
 
 typedef struct _mhlist
 {
-    struct _mhlist *next;
-    mValue key;
-    mValue value;
+	struct _mhlist *next;
+	mValue key;
+	mValue value;
 } mHList;
 typedef struct _mhashtable mHashtable;
 typedef size_t (*mhash_f)(mValue *);
@@ -67,44 +68,44 @@ typedef int (*mcmp_f)(mValue *a, mValue *b);
 
 typedef enum mhsh_res_value
 {
-    MHSH_RUN_OUT_OF_MEM = 0,
-    MHSH_OK,
-    MHSH_ERR_EXISTS,
-    MHSH_ERR_NOT_EXISTS
+	MHSH_RUN_OUT_OF_MEM = 0,
+	MHSH_OK,
+	MHSH_ERR_EXISTS,
+	MHSH_ERR_NOT_EXISTS
 
 } MHSH_RES_VALUE;
 typedef enum mhsh_flags
 {
-    MHSH_STRDUP_KEY = (1 << 0),
-    MHSH_STRDUP_VALUE = (1 << 1),
-    MSHS_WCSDUP_KEY = (1 << 2),
-    MSHS_WCSDUP_VALUE = (1 << 3),
-    MHSH_DESTROY_KEY_ON_POP = (1 << 4),
-    MHSH_DESTROY_VALUE_ON_POP = (1 << 5),
-    MHSH_FREE_STR_KEY_ON_POP = (1 << 6),
-    MHSH_FREE_STR_VALUE_ON_POP = (1 << 7),
-    MSHS_FREE_STR_KEY_ON_DESTROY = (1 << 8),
-    MSHS_FREE_STR_VALUE_ON_DESTROY = (1 << 9)
+	MHSH_STRDUP_KEY = (1 << 0),
+	MHSH_STRDUP_VALUE = (1 << 1),
+	MSHS_WCSDUP_KEY = (1 << 2),
+	MSHS_WCSDUP_VALUE = (1 << 3),
+	MHSH_DESTROY_KEY_ON_POP = (1 << 4),
+	MHSH_DESTROY_VALUE_ON_POP = (1 << 5),
+	MHSH_FREE_STR_KEY_ON_POP = (1 << 6),
+	MHSH_FREE_STR_VALUE_ON_POP = (1 << 7),
+	MSHS_FREE_STR_KEY_ON_DESTROY = (1 << 8),
+	MSHS_FREE_STR_VALUE_ON_DESTROY = (1 << 9)
 
 } MHSH_FLAGS;
 typedef struct _mhashtable
 {
-    mHList **tbl;
-    size_t tblsz;
-    mHList *lst;
-    size_t lstsz;
-    size_t lstn;
-    mStack *free_slots;
-    mhash_f hsh_f;
-    mcmp_f cmp_f;
-    mValue i_key;
-    mValue i_val;
-    mValue *o_key;
-    mValue *o_val;
-    MHSH_RES_VALUE err_n;
-    int flags;
-    mfree_mvalue_f fk_f;
-    mfree_mvalue_f fv_f;
+	mHList **tbl;
+	size_t tblsz;
+	mHList *lst;
+	size_t lstsz;
+	size_t lstn;
+	mStack *free_slots;
+	mhash_f hsh_f;
+	mcmp_f cmp_f;
+	mValue i_key;
+	mValue i_val;
+	mValue *o_key;
+	mValue *o_val;
+	MHSH_RES_VALUE err_n;
+	int flags;
+	mfree_f fk_f;
+	mfree_f fv_f;
 } mHashtable;
 
 size_t mhash_f_ull(mValue *);
@@ -119,7 +120,7 @@ int mcmp_ll(mValue *a, mValue *b);
 void simplefree_v(mValue *v);
 
 mHashtable *new_mHashtable(size_t start_size, mhash_f hsh_f, mcmp_f cmp_f);
-void destroy_mHashtable(mHashtable *tbl, mfree_mvalue_f fkey, mfree_mvalue_f fval);
+void destroy_mHashtable(mHashtable *tbl, mfree_f fkey, mfree_f fval);
 
 MHSH_RES_VALUE mhash_insert(mHashtable *htbl);
 MHSH_RES_VALUE mhash_get(mHashtable *htbl);
@@ -129,9 +130,9 @@ MHSH_RES_VALUE mhash_pop(mHashtable *htbl);
 
 typedef struct _m8string
 {
-    char *s;
-    size_t n;
-    size_t sz;
+	char *s;
+	size_t n;
+	size_t sz;
 } m8String;
 
 m8String *new_m8String();
@@ -142,19 +143,32 @@ char *m8s_concatc(m8String *, char);
 char *m8s_concatU16c(m8String *s, mu16 c);
 char *m8s_concati(m8String *, mll);
 char *m8s_concatwcs(m8String *, const mu16 *);
+char *m8s_strdup(m8String *);
+char *m8s_replace(m8String *, char *from, char *to);
+m8String *m8s_clone(m8String *);
+
+char *m8s_rtrim(m8String *);
+// be carfeul that ltrim can trigger an O(n^2) if you need an extensive use of ltrim consider to
+// put a mobile start string ;
+char *m8s_ltrim(m8String *);
+#define m8s_trim(a) (m8s_rtrim((a)), m8s_ltrim((a)))
 #define m8s_concats(a, b) (m8s_concat((a), (b), strlen(b)))
 #define m8s_concat8s(dest, src) (m8s_concat((dest), (src)->s, (src)->n))
 #define m8s_concatcm(a, b)                                                                                             \
-    ((b) == 0                 ? (a)->s                                                                                 \
-     : ((a)->n + 1 < (a)->sz) ? ((a)->s[(a)->n++] = (b), (a)->s[(a)->n] = '\0', (a)->s)                                \
-                              : m8s_concatc(a, b))
+	((b) == 0					  ? (a)->s                                                                             \
+	 : ((a)->n + 1 + 1 < (a)->sz) ? ((a)->s[(a)->n++] = (b), (a)->s[(a)->n] = '\0', (a)->s)                            \
+								  : m8s_concatc(a, b))
 #define m8s_reset(a) ((a)->n = 0, *((a)->s) = '\0', (a)->s = (a)->s)
+
+int read_utf8_seq(const char *stream, char ans[5]);
+size_t strlen_mb(const char *s);
+char *transliterate_diac(const char *utf8seq, char ans[5]);
 
 typedef struct _mu16string
 {
-    mu16 *s;
-    size_t n;
-    size_t sz;
+	mu16 *s;
+	size_t n;
+	size_t sz;
 } mU16String;
 
 mU16String *new_mU16String();
@@ -165,10 +179,10 @@ mu16 *mU16s_concatc(mU16String *, mu16 c);
 #define mU16s_concats(a, b) (mU16s_concat((a), (b), wcslen(b)))
 #define mU16s_concatU16s(a, b) (mU16s_concat((a), (b)->s, (b)->n))
 #define mU16s_concatcm(a, b)                                                                                           \
-    ((b) == 0                 ? (a)->s                                                                                 \
-     : ((a)->n + 1 < (a)->sz) ? ((a)->s[(a)->n++] = (b), (a)->s[(a)->n] = '\0', (a)->s)                                \
-                              : mU16s_concatc(a, b))
-#define mU16s_reset(a) ((a)->n = 0, *((a)->s)= '\0', (a)->s = (a)->s)
+	((b) == 0				  ? (a)->s                                                                                 \
+	 : ((a)->n + 2 < (a)->sz) ? ((a)->s[(a)->n++] = (b), (a)->s[(a)->n] = '\0', (a)->s)                                \
+							  : mU16s_concatc(a, b))
+#define mU16s_reset(a) ((a)->n = 0, *((a)->s) = '\0', (a)->s = (a)->s)
 char *mU16s_to_m8s(mU16String *, m8String *);
 mu16 *m8s_to_mU16s(m8String *, mU16String *);
 
@@ -234,177 +248,177 @@ typedef wchar_t mschar;
 
 typedef enum _sytype
 {
-    mSyNonterminal = 0,
-    mSyTerminal = 1,
-    mSyNoise = 2,
-    mSyEOF = 3,
-    mSyGroupStart = 4,
-    mSyGroupEnd = 5,
-    mSyDecremented = 6,
-    mSyError = 7
+	mSyNonterminal = 0,
+	mSyTerminal = 1,
+	mSyNoise = 2,
+	mSyEOF = 3,
+	mSyGroupStart = 4,
+	mSyGroupEnd = 5,
+	mSyDecremented = 6,
+	mSyError = 7
 
 } mSyType;
 typedef struct _symbol
 {
-    const muchar *Name;
-    mSyType Type;
+	const muchar *Name;
+	mSyType Type;
 } mSymbol;
 
 typedef struct _rule
 {
-    short NonTerminal;
-    short *symbol;
-    int nsymbol;
+	short NonTerminal;
+	short *symbol;
+	int nsymbol;
 } mRule;
 
 typedef struct _edge
 {
-    short CharSetIndex;
-    short TargetIndex;
+	short CharSetIndex;
+	short TargetIndex;
 } mEdge;
 typedef struct _dfa_state
 {
-    char Accept;
-    short AcceptIndex;
-    mEdge *edge;
-    short nedge;
+	char Accept;
+	short AcceptIndex;
+	mEdge *edge;
+	short nedge;
 } mDfa;
 typedef enum _action_enum
 {
-    ActionShift = 1,
-    ActionReduce = 2,
-    ActionGoto = 3,
-    ActionAccept = 4
+	ActionShift = 1,
+	ActionReduce = 2,
+	ActionGoto = 3,
+	ActionAccept = 4
 } MP_ACTION;
 typedef struct _action
 {
-    short SymbolIndex;
-    MP_ACTION Action;
-    short Target;
+	short SymbolIndex;
+	MP_ACTION Action;
+	short Target;
 } mAction;
 typedef struct _lalr_state
 {
-    mAction *action;
-    short naction;
-    mHashtable *h;
+	mAction *action;
+	short naction;
+	mHashtable *h;
 } mLalr;
 typedef struct _group
 {
-    muchar *name;
-    short cont_ix;
-    short start_ix;
-    short end_ix;
-    short advance_mode;
-    short end_mode;
-    short nnest;
-    short *nest;
+	muchar *name;
+	short cont_ix;
+	short start_ix;
+	short end_ix;
+	short advance_mode;
+	short end_mode;
+	short nnest;
+	short *nest;
 } mGroup;
 typedef struct _token
 {
-    short id;
-    const muchar *lexeme;
+	short id;
+	const muchar *lexeme;
 } mToken;
 
 typedef struct _mtree
 {
-    mSymbol symbol;
-    mToken token;
-    short state;
-    short rule;
-    struct _mtree **chs;
-    short nchs;
+	mSymbol symbol;
+	mToken token;
+	short state;
+	short rule;
+	struct _mtree **chs;
+	short nchs;
 
 } mTree;
 
 typedef struct _mtree_data
 {
-    mStack *mem_chunks;
-    mTree *cur_buf;
-    size_t sz;
-    size_t n;
+	mStack *mem_chunks;
+	mTree *cur_buf;
+	size_t sz;
+	size_t n;
 } mTreeData;
 typedef struct _mchset
 {
-    muchar *chset;
-    mHashtable *h;
+	muchar *chset;
+	mHashtable *h;
 } mCharSet;
 
 typedef enum _mp_ERRS
 {
-    MP_RUN_OUT_OF_MEMORY = 0,
-    MP_OK,
-    MP_CANNOT_OPEN_FILE,
-    MP_ERR_READING_FILE,
-    MP_NOT_VALID_GRAMMAR,
-    MP_NOT_VALID_UTF8_SEQ,
-    MP_NOT_VALID_CHAR,
-    MP_NOT_VALID_END,
-    MP_UNKNOWN_ERR
+	MP_RUN_OUT_OF_MEMORY = 0,
+	MP_OK,
+	MP_CANNOT_OPEN_FILE,
+	MP_ERR_READING_FILE,
+	MP_NOT_VALID_GRAMMAR,
+	MP_NOT_VALID_UTF8_SEQ,
+	MP_NOT_VALID_CHAR,
+	MP_NOT_VALID_END,
+	MP_UNKNOWN_ERR
 } MP_ERRS;
 
 typedef struct _mgram
 {
-    short init_dfa;
-    short init_lalr;
-    char case_sensitive;
-    short start_symbol;
-    mCharSet *chset;
-    short ncharset;
-    mDfa *dfa;
-    short ndfa;
-    mSymbol *sym;
-    short nsym;
-    mRule *rule;
-    short nrule;
-    mLalr *lalr;
-    short nlalr;
-    mGroup *grp;
-    short ngrp;
+	short init_dfa;
+	short init_lalr;
+	char case_sensitive;
+	short start_symbol;
+	mCharSet *chset;
+	short ncharset;
+	mDfa *dfa;
+	short ndfa;
+	mSymbol *sym;
+	short nsym;
+	mRule *rule;
+	short nrule;
+	mLalr *lalr;
+	short nlalr;
+	mGroup *grp;
+	short ngrp;
 #if MP_LOAD_PROPERTY
-    muchar **prop_name;
-    muchar **prop_value;
-    size_t n_props;
+	muchar **prop_name;
+	muchar **prop_value;
+	size_t n_props;
 #endif
 } mGram;
 
 typedef struct _minput
 {
-    const muchar *exp;
-    size_t exp_len;
-    const muchar *cur;
-    char MEOF;
-    int row_n;
-    const muchar *start_row_pos;
+	const muchar *exp;
+	size_t exp_len;
+	const muchar *cur;
+	char MEOF;
+	int row_n;
+	const muchar *start_row_pos;
 #if MP_CODING == MP_UTF8
-    char out[5];
-    int l_seq;
+	char out[5];
+	int l_seq;
 #elif MP_CODING == MP_UNICODE
-    mu16 out;
+	mu16 out;
 #endif
 
 } mInput;
 
 typedef struct _mparser
 {
-    mGram *grm;
-    mInput in;
-    char reduction;
-    short reduce_rule;
-    short symbol;
-    short lalr_state;
-    mTreeData tree_data;
-    mStack *tree_stack;
-    mToken *tokens;
-    size_t ntokens;
-    size_t sztoks;
-    mUString *lex;
+	mGram *grm;
+	mInput in;
+	char reduction;
+	short reduce_rule;
+	short symbol;
+	short lalr_state;
+	mTreeData tree_data;
+	mStack *tree_stack;
+	mToken *tokens;
+	size_t ntokens;
+	size_t sztoks;
+	mUString *lex;
 
-    mTree *out_tree;
-    MP_ERRS err_n;
+	mTree *out_tree;
+	MP_ERRS err_n;
 #if MP_CODING == MP_UTF8
-    char *err_msg;
+	char *err_msg;
 #elif MP_CODING == MP_UNICODE
-    wchar_t *err_msg;
+	wchar_t *err_msg;
 #endif // MP_CODING
 } mParser;
 

@@ -1,11 +1,12 @@
 #line 2 "mparser.c"
-///This program is distribuited under the licence GPL-3.0
-///I have not so much requirement, just alert me if you find
-///some bugs: spanu_andrea(at)yahoo.it 
-///ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
-  
+/// This program is distribuited under the licence GPL-3.0
+/// I have not so much requirement, just alert me if you find
+/// some bugs: spanu_andrea(at)yahoo.it
+/// ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
+
 #include "mparser.h"
 #include <assert.h>
+#include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <wchar.h>
@@ -15,7 +16,7 @@
 #define MP_TOKEN_BUF_SZ 32
 
 static muchar _err_buf[1024];
-
+//clang-format off
 #define MP_RAISE_ERR(a, numb, msg, retval)		\
 	do						\
 	{						\
@@ -23,7 +24,7 @@ static muchar _err_buf[1024];
 		(a)->err_msg = (mschar *)(msg);		\
 		return retval;				\
 	} while ((a)->err_n & 0x3B7)
-
+//clang-format on
 #if MP_CODING == MP_UTF8
 char *_str[] = {
 	"ERR:Run Out Of Memory",
@@ -80,11 +81,11 @@ ERR2:
 ERR1:
 	return NULL;
 }
-void destroy_mStack(mStack *stk, mfree_mvalue_f fv)
+void destroy_mStack(mStack *stk, mfree_f fv)
 {
 	if (fv)
 		while (stk->n--)
-			(*fv)(&stk->val[stk->n]);
+			(*fv)(stk->val[stk->n].v);
 	free(stk->val);
 	free(stk);
 }
@@ -145,8 +146,8 @@ mHashtable *new_mHashtable(size_t start_size, mhash_f hsh_f, mcmp_f cmp_f)
 	mHashtable *res = malloc(sizeof(mHashtable));
 	if (!res)
 		goto ERR1;
-	start_size = start_size < 16 ? 16 : start_size % 4 == 0 ? start_size : start_size + (4 - start_size % 4);
-	res->tblsz = start_size >> 2;
+	start_size = (start_size < 16 ? 16 : start_size + (4 - start_size % 4));
+	res->tblsz = 1 + (start_size >> 2);
 	res->tbl = calloc(res->tblsz, sizeof(mHList *));
 	if (!res->tbl)
 		goto ERR2;
@@ -172,7 +173,7 @@ ERR2:
 ERR1:
 	return NULL;
 }
-void destroy_mHashtable(mHashtable *tbl, mfree_mvalue_f fkey, mfree_mvalue_f fval)
+void destroy_mHashtable(mHashtable *tbl, mfree_f fkey, mfree_f fval)
 {
 
 	if ((tbl->flags & (MSHS_FREE_STR_KEY_ON_DESTROY | MSHS_FREE_STR_VALUE_ON_DESTROY)) || fkey || fval)
@@ -182,13 +183,13 @@ void destroy_mHashtable(mHashtable *tbl, mfree_mvalue_f fkey, mfree_mvalue_f fva
 			if ((tbl->flags & MSHS_FREE_STR_KEY_ON_DESTROY) && v->s)
 				free(v->s);
 			else if (fkey && v->v)
-				(*fkey)(v);
+				(*fkey)(v->v);
 
 			v = &tbl->lst[tbl->lstn].value;
 			if ((tbl->flags & MSHS_FREE_STR_VALUE_ON_DESTROY) && v->s)
 				free(v->s);
 			else if (fval && v->v)
-				(*fval)(v);
+				(*fval)(v->v);
 		}
 	free(tbl->lst);
 	free(tbl->tbl);
@@ -198,11 +199,11 @@ void destroy_mHashtable(mHashtable *tbl, mfree_mvalue_f fkey, mfree_mvalue_f fva
 
 int mcmp_ull(mValue *a, mValue *b)
 {
-	if (a->ull < b->ull)
-		return -1;
+	if (a->ull == b->ull)
+		return 0;
 	else if (a->ull > b->ull)
 		return 1;
-	return 0;
+	return -1;
 }
 int mcmp_s(mValue *a, mValue *b)
 {
@@ -214,17 +215,17 @@ int mcmp_sbuf(mValue *a, mValue *b)
 }
 int mcmp_ll(mValue *a, mValue *b)
 {
-	if (a->ll < b->ll)
-		return -1;
+	if (a->ll == b->ll)
+		return 0;
 	else if (a->ll > b->ll)
 		return 1;
-	return 0;
+	return 1;
 }
 static MHSH_RES_VALUE mhash_realloc(mHashtable *htbl)
 {
 	mHList **tbl_tmp, *list_buf_tmp;
-	size_t new_tbl_sz, new_lst_sz = htbl->lstsz << 3, i, c_hsh;
-	new_tbl_sz = new_lst_sz >> 2;
+	size_t new_tbl_sz, new_lst_sz = (htbl->lstsz << 2), i, c_hsh;
+	new_tbl_sz = 1 + (new_lst_sz >> 2);
 
 	list_buf_tmp = realloc(htbl->lst, sizeof(mHList) * new_lst_sz);
 
@@ -366,7 +367,7 @@ MHSH_RES_VALUE mhash_pop(mHashtable *htbl)
 	if (htbl->flags & MHSH_DESTROY_KEY_ON_POP)
 	{
 		assert(htbl->fk_f);
-		(*htbl->fk_f)(&cur->key);
+		(*htbl->fk_f)(cur->key.v);
 		memset(&cur->key, 0, sizeof(mValue));
 	}
 	else if (htbl->flags & MHSH_FREE_STR_KEY_ON_POP)
@@ -378,7 +379,7 @@ MHSH_RES_VALUE mhash_pop(mHashtable *htbl)
 	if (htbl->flags & MHSH_DESTROY_VALUE_ON_POP)
 	{
 		assert(htbl->fv_f);
-		(*htbl->fv_f)(&cur->value);
+		(*htbl->fv_f)(cur->value.v);
 		memset(&cur->value, 0, sizeof(mValue));
 	}
 	else if (htbl->flags & MHSH_FREE_STR_VALUE_ON_POP)
@@ -426,21 +427,21 @@ char *m8s_realloc(m8String *u8s, size_t len)
 	u8s->s = tmp;
 	return u8s->s;
 }
-char *m8s_concat(m8String *u8s, register const char *s,register size_t len)
+char *m8s_concat(m8String *u8s, register const char *s, register size_t len)
 {
-	register char * a;
-	
+	register char *a;
+
 	if (u8s->n + len + 1 >= u8s->sz) // I ever add one more so I sleep comfortably
 		if (!m8s_realloc(u8s, len))
 			return NULL;
-	a=u8s->s + u8s->n;
-	
-	while(len-- && (*a=*s))
-		++a,++s; //if s is shorter than len, a must no go further, so, no *a++=*s++
-	
-	u8s->n = a-u8s->s;
+	a = u8s->s + u8s->n;
+
+	while (len-- && (*a = *s))
+		++a, ++s; // if s is shorter than len, a must no go further, so, no *a++=*s++
+
+	u8s->n = a - u8s->s;
 	*a = '\0';
-	
+
 	return u8s->s;
 }
 char *m8s_concatc(m8String *u8s, char c)
@@ -457,8 +458,8 @@ char *m8s_concatc(m8String *u8s, char c)
 char *m8s_concati(m8String *u8s, register mll i)
 {
 #define MU8S_CONCATI_BUF_SZ 30
-	char buf[MU8S_CONCATI_BUF_SZ];
-	register char* cur;
+	static char buf[MU8S_CONCATI_BUF_SZ];
+	register char *cur;
 	cur = buf + MU8S_CONCATI_BUF_SZ;
 	*(--cur) = '\0';
 	if (i < 0)
@@ -487,6 +488,198 @@ char *m8s_concatwcs(m8String *u8s, const mu16 *wcs)
 	return u8s->s;
 }
 
+char *m8s_strdup(m8String *u8s)
+{
+	char *res;
+	res = malloc(u8s->n + 1);
+	if (res)
+		strcpy(res, u8s->s);
+	return res;
+}
+m8String *m8s_clone(m8String *u8s)
+{
+	m8String *res = malloc(sizeof(m8String));
+	if (!res)
+		return NULL;
+	res->n = u8s->n;
+	res->sz = u8s->sz - u8s->n < 10 ? u8s->sz + 10 : u8s->sz;
+	res->s = malloc(res->sz);
+	if (res->s)
+		strcpy(res->s, u8s->s);
+	else
+	{
+		free(res);
+		return NULL;
+	}
+	return res;
+}
+
+char *m8s_ltrim(m8String *u8s)
+{
+	register char *cur, *start;
+	cur = start = u8s->s;
+	while (*cur && isspace(*cur))
+		++cur;
+	if (cur > start)
+	{
+		while ((*start = *cur))
+			++start, ++cur;
+
+		u8s->n = start - u8s->s;
+	}
+
+	return u8s->s;
+}
+
+char *m8s_rtrim(m8String *u8s)
+{
+
+	if (u8s->n)
+	{
+		char *cur = u8s->s + u8s->n;
+		while (cur > u8s->s && isspace(cur[-1]))
+			--cur;
+		*(cur) = '\0';
+		u8s->n = cur - u8s->s;
+	}
+	return u8s->s;
+}
+char *m8s_replace(m8String *u8s, char *from, char *to)
+{
+	assert(from && to);
+	size_t from_len = strlen(from), to_len = strlen(to);
+	if (from_len == 0)
+		return u8s->s;
+	if (from_len >= to_len)
+	{
+		char *cur, *sv, *curcur;
+		curcur = sv = cur = u8s->s;
+		while (*cur && (cur = strstr(cur, from)))
+		{
+			strncpy(sv, curcur, (cur - curcur));
+			sv += (cur - curcur);
+			strncpy(sv, to, to_len);
+			sv += to_len;
+			curcur = cur = cur + from_len;
+		}
+		while ((*sv = *curcur))
+			sv++, curcur++;
+		u8s->n = sv - u8s->s;
+	}
+	else
+	{
+		if (strstr(u8s->s, from))
+		{
+			m8String *ns = m8s_clone(u8s); // I clone it just to have a buffer in the same order of magnitude: kB, MB,GB
+			if (!ns)
+				return NULL;
+			m8s_reset(ns);
+			char *curi, *curcur;
+			curcur = curi = u8s->s;
+			while (*curi && (curi = strstr(curi, from)))
+			{
+				m8s_concat(ns, curcur, curi - curcur);
+				curi = curcur = curi + from_len;
+				m8s_concat(ns, to, to_len);
+			}
+			m8s_concat(ns, curcur, (u8s->s + u8s->n) - curcur);
+			free(u8s->s);
+			memcpy(u8s, ns, sizeof(m8String));
+			free(ns);
+		}
+	}
+	return u8s->s;
+}
+char *transliterate_diac(const char *utf8seq, char ans[5])
+{
+	static mHashtable *ht;
+	if (!ht)
+	{
+		int i;
+		// clang-format off
+		char *rep[][2] = {
+			{"á","a"},{"Á","A"},{"à","a"},{"À","A"},{"ă","a"},{"Ă","A"},{"â","a"},{"Â","A"},{"å","a"},{"Å","A"},
+			{"ã","a"},{"Ã","A"},{"ą","a"},{"Ą","A"},{"ā","a"},{"Ā","A"},{"ä","ae"},{"Ä","AE"},{"æ","ae"},{"Æ","AE"},
+			{"ḃ","b"},{"Ḃ","B"},{"ć","c"},{"Ć","C"},{"ĉ","c"},{"Ĉ","C"},{"č","c"},{"Č","C"},{"ċ","c"},{"Ċ","C"},
+			{"ç","c"},{"Ç","C"},{"ď","d"},{"Ď","D"},{"ḋ","d"},{"Ḋ","D"},{"đ","d"},{"Đ","D"},{"ð","dh"},{"Ð","Dh"},
+			{"é","e"},{"É","E"},{"è","e"},{"È","E"},{"ĕ","e"},{"Ĕ","E"},{"ê","e"},{"Ê","E"},{"ě","e"},{"Ě","E"},
+			{"ë","e"},{"Ë","E"},{"ė","e"},{"Ė","E"},{"ę","e"},{"Ę","E"},{"ē","e"},{"Ē","E"},{"ḟ","f"},{"Ḟ","F"},
+			{"ƒ","f"},{"Ƒ","F"},{"ğ","g"},{"Ğ","G"},{"ĝ","g"},{"Ĝ","G"},{"ġ","g"},{"Ġ","G"},{"ģ","g"},{"Ģ","G"},
+			{"ĥ","h"},{"Ĥ","H"},{"ħ","h"},{"Ħ","H"},{"í","i"},{"Í","I"},{"ì","i"},{"Ì","I"},{"î","i"},{"Î","I"},
+			{"ï","i"},{"Ï","I"},{"ĩ","i"},{"Ĩ","I"},{"į","i"},{"Į","I"},{"ī","i"},{"Ī","I"},{"ĵ","j"},{"Ĵ","J"},
+			{"ķ","k"},{"Ķ","K"},{"ĺ","l"},{"Ĺ","L"},{"ľ","l"},{"Ľ","L"},{"ļ","l"},{"Ļ","L"},{"ł","l"},{"Ł","L"},
+			{"ṁ","m"},{"Ṁ","M"},{"ń","n"},{"Ń","N"},{"ň","n"},{"Ň","N"},{"ñ","n"},{"Ñ","N"},{"ņ","n"},{"Ņ","N"},
+			{"ó","o"},{"Ó","O"},{"ò","o"},{"Ò","O"},{"ô","o"},{"Ô","O"},{"ő","o"},{"Ő","O"},{"õ","o"},{"Õ","O"},
+			{"ø","oe"},{"Ø","OE"},{"ō","o"},{"Ō","O"},{"ơ","o"},{"Ơ","O"},{"ö","oe"},{"Ö","OE"},{"ṗ","p"},{"Ṗ","P"},
+			{"ŕ","r"},{"Ŕ","R"},{"ř","r"},{"Ř","R"},{"ŗ","r"},{"Ŗ","R"},{"ś","s"},{"Ś","S"},{"ŝ","s"},{"Ŝ","S"},
+			{"š","s"},{"Š","S"},{"ṡ","s"},{"Ṡ","S"},{"ş","s"},{"Ş","S"},{"ș","s"},{"Ș","S"},{"ß","ss"},{"ť","t"},
+			{"Ť","T"},{"ṫ","t"},{"Ṫ","T"},{"ţ","t"},{"Ţ","T"},{"ț","t"},{"Ț","T"},{"ŧ","t"},{"Ŧ","T"},{"ú","u"},
+			{"Ú","U"},{"ù","u"},{"Ù","U"},{"ŭ","u"},{"Ŭ","U"},{"û","u"},{"Û","U"},{"ů","u"},{"Ů","U"},{"ű","u"},
+			{"Ű","U"},{"ũ","u"},{"Ũ","U"},{"ų","u"},{"Ų","U"},{"ū","u"},{"Ū","U"},{"ư","u"},{"Ư","U"},{"ü","ue"},
+			{"Ü","UE"},{"ẃ","w"},{"Ẃ","W"},{"ẁ","w"},{"Ẁ","W"},{"ŵ","w"},{"Ŵ","W"},{"ẅ","w"},{"Ẅ","W"},{"ý","y"},
+			{"Ý","Y"},{"ỳ","y"},{"Ỳ","Y"},{"ŷ","y"},{"Ŷ","Y"},{"ÿ","y"},{"Ÿ","Y"},{"ź","z"},{"Ź","Z"},{"ž","z"},
+			{"Ž","Z"},{"ż","z"},{"Ż","Z"},{"þ","th"},{"Þ","Th"},{"µ","u"},{"а","a"},{"А","a"},{"б","b"},{"Б","b"},
+			{"в","v"},{"В","v"},{"г","g"},{"Г","g"},{"д","d"},{"Д","d"},{"е","e"},{"Е","E"},{"ё","e"},{"Ё","E"},
+			{"ж","zh"},{"Ж","zh"},{"з","z"},{"З","z"},{"и","i"},{"И","i"},{"й","j"},{"Й","j"},{"к","k"},{"К","k"},
+			{"л","l"},{"Л","l"},{"м","m"},{"М","m"},{"н","n"},{"Н","n"},{"о","o"},{"О","o"},{"п","p"},{"П","p"},
+			{"р","r"},{"Р","r"},{"с","s"},{"С","s"},{"т","t"},{"Т","t"},{"у","u"},{"У","u"},{"ф","f"},{"Ф","f"},
+			{"х","h"},{"Х","h"},{"ц","c"},{"Ц","c"},{"ч","ch"},{"Ч","ch"},{"ш","sh"},{"Ш","sh"},{"щ","sch"},{"Щ","sch"},
+			{"ъ",""},{"Ъ",""},{"ы","y"},{"Ы","y"},{"ь",""},{"Ь",""},{"э","e"},{"Э","e"},{"ю","ju"},{"Ю","ju"},
+			{"я","ja"},{"Я","ja"},{"€","EUR"},///if you add something remember that the ans buffer is 5
+		};
+		// clang-format on
+		ht = new_mHashtable(sizeof(rep) / sizeof(*rep), mhash_f_sbuf, mcmp_sbuf);
+		assert(ht);
+#ifdef DHASH_H_INCLUDED
+		dcomment(ht, "Static hashtable  function transliterate_diac()");
+		dcomment(ht->tbl, "Static hashtable  function transliterate_diac()");
+		dcomment(ht->lst, "Static hashtable  function transliterate_diac()");
+		dcomment(ht->free_slots, "Static hashtable  function transliterate_diac()");
+		dcomment(ht->free_slots->val, "Static hashtable  function transliterate_diac()");
+#endif
+		for (i = 0; i < sizeof(rep) / sizeof(*rep); i++)
+		{
+			// if(strlen(rep[i][0])<strlen(rep[i][1]))
+			// printf("%s shorter than %s\n",rep[i][0],rep[i][1]);
+			// if (strlen(rep[i][0]) > 2)
+			//	printf("%s %d bytes\n", rep[i][0], (int)strlen(rep[i][0]));
+			strcpy(ht->i_key.sbuf, rep[i][0]);
+			strcpy(ht->i_val.sbuf, rep[i][1]);
+			if (mhash_insert(ht) == MHSH_RUN_OUT_OF_MEM)
+				assert(0);
+			else if (ht->err_n == MHSH_ERR_EXISTS)
+			{
+				printf("%s key already exists\n", ht->o_key->sbuf);
+			}
+		}
+	}
+	strcpy(ht->i_key.sbuf, utf8seq);
+	if (mhash_get(ht) == MHSH_ERR_NOT_EXISTS)
+	{
+		ans[0] = '\0';
+		return NULL;
+	}
+	strcpy(ans, ht->o_val->sbuf);
+	return ans;
+}
+
+size_t strlen_mb(register const char *s)
+{
+
+	int seq_len;
+	size_t res = 0;
+	char seq[5];
+
+	while ((seq_len = read_utf8_seq(s, seq)))
+	{
+		res++;
+		if (seq_len > 0)
+			s += seq_len;
+		else
+			s -= seq_len;
+	}
+	return res;
+}
 int mU16c_to_m8c(mu16 c, char ans[5])
 {
 	int res = 0;
@@ -524,11 +717,12 @@ int mU16c_to_m8c(mu16 c, char ans[5])
 
 	return res;
 }
-int read_utf8_seq(const char *stream, char ans[5], size_t len_stream)
+int read_utf8_seq(const char *stream, char ans[5])
 {
 
-	unsigned char *cur = (unsigned char *)ans, *buf = (unsigned char *)stream;
-
+	register unsigned char *cur = (unsigned char *)ans;
+	register unsigned char *buf = (unsigned char *)stream;
+//clang-format off
 #define MP_READ_UTF8_INTERNAL_MACRO(a)			\
 	do						\
 	{						\
@@ -536,23 +730,19 @@ int read_utf8_seq(const char *stream, char ans[5], size_t len_stream)
 			goto NOT_VALID_SEQ;		\
 		*cur++ = *buf++;			\
 	} while (buf - (unsigned char *)stream < (a))
-
-	if (!buf || !*buf || len_stream == 0)
+//clang-format on
+	if (!(buf && *buf))
 		return *cur = '\0';
 	*cur++ = *buf++;
 
 	if ((unsigned char)ans[0] < 0x80)
 	{
 	}
-	else if ((unsigned char)ans[0] < 0xE0 && ((unsigned char)ans[0] & 0xE0) == 0xC0 && len_stream > 1)
+	else if (((unsigned char)ans[0] & 0xE0) == 0xC0)
 		MP_READ_UTF8_INTERNAL_MACRO(2);
-	else if ((unsigned char)ans[0] < 0xE0)
-		goto NOT_VALID_SEQ;
-	else if ((unsigned char)ans[0] < 0xF0 && ((unsigned char)ans[0] & 0xF0) == 0xE0 && len_stream > 2)
+	else if (((unsigned char)ans[0] & 0xF0) == 0xE0)
 		MP_READ_UTF8_INTERNAL_MACRO(3);
-	else if ((unsigned char)ans[0] < 0xF0)
-		goto NOT_VALID_SEQ;
-	else if ((unsigned char)ans[0] < 0xF8 && ((unsigned char)ans[0] & 0xF8) == 0xF0 && len_stream > 3)
+	else if (((unsigned char)ans[0] & 0xF8) == 0xF0)
 		MP_READ_UTF8_INTERNAL_MACRO(4);
 	else
 		goto NOT_VALID_SEQ;
@@ -607,19 +797,19 @@ mu16 *mU16s_realloc(mU16String *u16s, size_t len)
 	u16s->s = tmp;
 	return u16s->s;
 }
-mu16 *mU16s_concat(mU16String *u16s, register  const  mu16 *s, register size_t len)
+mu16 *mU16s_concat(mU16String *u16s, register const mu16 *s, register size_t len)
 {
 	register mu16 *a;
-	
+
 	if (u16s->n + len + 1 >= u16s->sz)
 		if (!mU16s_realloc(u16s, len))
 			return NULL;
 
-	a=u16s->s + u16s->n;
-	while(len-- && (*a = *s))
-		++a,++s;
-	
-	u16s->n = a-u16s->s;
+	a = u16s->s + u16s->n;
+	while (len-- && (*a = *s))
+		++a, ++s;
+
+	u16s->n = a - u16s->s;
 	*a = '\0';
 	return u16s->s;
 }
@@ -662,7 +852,7 @@ mu16 *m8s_to_mU16s(m8String *u8s, mU16String *u16s)
 	cur = (unsigned char *)u8s->s;
 	while (*cur)
 	{
-		len = read_utf8_seq((char *)cur, lbuf, (size_t)((ptrdiff_t)u8s->n - (cur - (unsigned char *)u8s->s)));
+		len = read_utf8_seq((char *)cur, lbuf);
 		if (len == 0)
 			break;
 		else if (len < 0)
@@ -1101,7 +1291,7 @@ static mGram *new_mGram(const char *src, size_t len, MP_ERRS *err_n)
 				while (cur - save_start < (ptrdiff_t)us->n)
 				{
 					int n_seq;
-					n_seq = read_utf8_seq(cur, h->i_key.sbuf, us->n - (cur - save_start));
+					n_seq = read_utf8_seq(cur, h->i_key.sbuf);
 					if (n_seq < 0)
 					{
 						*err_n = MP_NOT_VALID_GRAMMAR;
@@ -1441,7 +1631,7 @@ void mpReset(mParser *mp)
 	mp->in.cur = mp->in.exp = NULL;
 	mp->in.MEOF = 0;
 	mp->in.exp_len = 0;
-	
+
 	mp->in.row_n = 1;
 
 	mp->lalr_state = mp->grm->init_lalr;
@@ -1571,7 +1761,7 @@ static MP_ERRS mp_next_char(mParser *mp)
 	{
 
 #if MP_CODING == MP_UTF8
-		int n_seq = read_utf8_seq(mp->in.cur, mp->in.out, (ptrdiff_t)mp->in.exp_len - (mp->in.cur - mp->in.exp));
+		int n_seq = read_utf8_seq(mp->in.cur, mp->in.out);
 		if (n_seq < 0)
 			MP_RAISE_ERR(mp, MP_NOT_VALID_UTF8_SEQ, MP_ERR_MSG_UTF8_SEQ_NOT_VALID, MP_NOT_VALID_UTF8_SEQ);
 		mp->in.l_seq = n_seq;

@@ -1,8 +1,8 @@
 #line 2 "main.c"
-///This program is distribuited under the licence GPL-3.0
-///I have not so much requirement, just alert me if you find
-///some bugs: spanu_andrea(at)yahoo.it 
-///ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
+/// This program is distribuited under the licence GPL-3.0
+/// I have not so much requirement, just alert me if you find
+/// some bugs: spanu_andrea(at)yahoo.it
+/// ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
 
 #include <ctype.h>
 #include <locale.h>
@@ -33,87 +33,92 @@
 #undef destroy_mUString
 #undef MP_WCSFORMATER
 void get_str(m8String *s, char *prompt);
-int get_randchr(int srnd, char *buf, int len)
+int get_randchr(int srnd, m8String *s, int len)
 {
-	char a[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-				'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-				'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
+	static char a[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+					   'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F',
+					   'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+					   'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+	char *buf;
+	if (s->sz + 1 < len)
+		m8s_realloc(s, len);
+	buf = s->s;
 	if (srnd == 0)
 		srand((unsigned int)time(NULL));
 	while (--len)
 		*buf++ = a[rand() % sizeof(a)];
 	*buf = '\0';
+	s->n = buf - s->s;
 	return 1;
 }
 char *get_op_name(int code)
 {
 	static char *op_name[] = {
-		"NULL",	  /*0 NUL (null)*/
-		"SOH",	   /*1 SOH (start of header)*/
-		"STK",	   /*2 STX (start of text)*/
-		"ETX",	   /*3 ETX (end of text)*/
-		"EOT",	   /*4 EOT (end of transmission)*/
-		"ENQ",	   /*5 ENQ (enquiry)*/
-		"ACK",	   /*6 ACK (acknowledge)*/
-		"BEL",	   /*7 BEL (bell)*/
-		"BS",		/*8 BS (backspace)*/
-		"HT",		/*9 HT (horizontal tab)*/
-		"LF",		/*10 LF (line feed - new line)*/
-		"VT",		/*11 VT (vertical tab)*/
-		"FF",		/*12 FF (form feed - new page)*/
-		"CR",		/*13 CR (carriage return)*/
-		"SO",		/*14 SO (shift out)*/
-		"SI",		/*15 SI (shift in)*/
-		"DLE",	   /*16 DLE (data link escape)*/
-		"DC1",	   /*17 DC1 (device control 1)*/
-		"DC2",	   /*18 DC2 (device control 2)*/
-		"DC3",	   /*19 DC3 (device control 3)*/
-		"DC4",	   /*20 DC4 (device control 4)*/
-		"NAK",	   /*21 NAK (negative acknowledge)*/
-		"SYN",	   /*22 SYN (synchronous idle)*/
-		"ETB",	   /*23 ETB (end of transmission block)*/
-		"CAN",	   /*24 CAN (cancel)*/
-		"EM",		/*25 EM (end of medium)*/
-		"SUB",	   /*26 SUB (substitute)*/
-		"ESC",	   /*27 ESC (escape)*/
-		"FS",		/*28 FS (file separator)*/
-		"GS",		/*29 GS (group separator)*/
-		"RS",		/*30 RS (record separator)*/
-		"US",		/*31 US (unit separator)*/
+		"NULL",		 /*0 NUL (null)*/
+		"SOH",		 /*1 SOH (start of header)*/
+		"STK",		 /*2 STX (start of text)*/
+		"ETX",		 /*3 ETX (end of text)*/
+		"EOT",		 /*4 EOT (end of transmission)*/
+		"ENQ",		 /*5 ENQ (enquiry)*/
+		"ACK",		 /*6 ACK (acknowledge)*/
+		"BEL",		 /*7 BEL (bell)*/
+		"BS",		 /*8 BS (backspace)*/
+		"HT",		 /*9 HT (horizontal tab)*/
+		"LF",		 /*10 LF (line feed - new line)*/
+		"VT",		 /*11 VT (vertical tab)*/
+		"FF",		 /*12 FF (form feed - new page)*/
+		"CR",		 /*13 CR (carriage return)*/
+		"SO",		 /*14 SO (shift out)*/
+		"SI",		 /*15 SI (shift in)*/
+		"DLE",		 /*16 DLE (data link escape)*/
+		"DC1",		 /*17 DC1 (device control 1)*/
+		"DC2",		 /*18 DC2 (device control 2)*/
+		"DC3",		 /*19 DC3 (device control 3)*/
+		"DC4",		 /*20 DC4 (device control 4)*/
+		"NAK",		 /*21 NAK (negative acknowledge)*/
+		"SYN",		 /*22 SYN (synchronous idle)*/
+		"ETB",		 /*23 ETB (end of transmission block)*/
+		"CAN",		 /*24 CAN (cancel)*/
+		"EM",		 /*25 EM (end of medium)*/
+		"SUB",		 /*26 SUB (substitute)*/
+		"ESC",		 /*27 ESC (escape)*/
+		"FS",		 /*28 FS (file separator)*/
+		"GS",		 /*29 GS (group separator)*/
+		"RS",		 /*30 RS (record separator)*/
+		"US",		 /*31 US (unit separator)*/
 		"SPACE",	 /*32 (space)*/
-		"ExMark",	/*33 !*/
-		"DblQuot",   /*34 "*/
-		"NumSgn",	/*35 #*/
-		"Dol",	   /*36 $*/
-		"Perc",	  /*37 %*/
+		"ExMark",	 /*33 !*/
+		"DblQuot",	 /*34 "*/
+		"NumSgn",	 /*35 #*/
+		"Dol",		 /*36 $*/
+		"Perc",		 /*37 %*/
 		"Amper",	 /*38 &*/
-		"SngQuot",   /*39 '*/
-		"OBrk",	  /*40 (*/
-		"CBrk",	  /*41 )*/
+		"SngQuot",	 /*39 '*/
+		"OBrk",		 /*40 (*/
+		"CBrk",		 /*41 )*/
 		"Times",	 /*42 **/
-		"Plus",	  /*43 +*/
+		"Plus",		 /*43 +*/
 		"Comma",	 /*44 ,*/
 		"Minus",	 /*45 -*/
-		"Dot",	   /*46 .*/
+		"Dot",		 /*46 .*/
 		"Slash",	 /*47 /*/
-		"Zero",	  /*48 0*/
-		"One",	   /*49 1*/
-		"Two",	   /*50 2*/
+		"Zero",		 /*48 0*/
+		"One",		 /*49 1*/
+		"Two",		 /*50 2*/
 		"Three",	 /*51 3*/
-		"Four",	  /*52 4*/
-		"Five",	  /*53 5*/
-		"Six",	   /*54 6*/
+		"Four",		 /*52 4*/
+		"Five",		 /*53 5*/
+		"Six",		 /*54 6*/
 		"Seven",	 /*55 7*/
 		"Eight",	 /*56 8*/
-		"Nine",	  /*57 9*/
+		"Nine",		 /*57 9*/
 		"Colon",	 /*58 :*/
-		"Semcln",	/*59 ;*/
-		"Lt",		/*60 <*/
-		"Eq",		/*61 =*/
-		"Gt",		/*62 >*/
-		"QstMrk",	/*63 ?*/
-		"At",		/*64 @*/
+		"Semcln",	 /*59 ;*/
+		"Lt",		 /*60 <*/
+		"Eq",		 /*61 =*/
+		"Gt",		 /*62 >*/
+		"QstMrk",	 /*63 ?*/
+		"At",		 /*64 @*/
 		"A",		 /*65 A*/
 		"B",		 /*66 B*/
 		"C",		 /*67 C*/
@@ -144,8 +149,8 @@ char *get_op_name(int code)
 		"BackSlash", /*92 \ */
 		"CSBrk",	 /*93 ]*/
 		"Caret",	 /*94 ^*/
-		"UndScr",	/*95 _*/
-		"BckTck",	/*96 `*/
+		"UndScr",	 /*95 _*/
+		"BckTck",	 /*96 `*/
 		"a",		 /*97 a*/
 		"b",		 /*98 b*/
 		"c",		 /*99 c*/
@@ -173,32 +178,32 @@ char *get_op_name(int code)
 		"y",		 /*121 y*/
 		"z",		 /*122 z*/
 		"OCBrk",	 /*123 {*/
-		"VertBar",   /*124 |*/
+		"VertBar",	 /*124 |*/
 		"CCBrk",	 /*125 }*/
 		"Tilde",	 /*126 ~*/
-		"DEL",	   /*127 DEL (delete)*/
+		"DEL",		 /*127 DEL (delete)*/
 	};
 	if (code < 0 || code >= sizeof(op_name) / sizeof(op_name[0]))
 		return NULL;
 	return op_name[code];
 }
 
-void get_simple_input(m8String *s, char *prompt, int twice_enter)
+void get_simple_input(m8String *s, char *prompt, int twice_enter, int simple)
 {
 	int c, is_valid = 1, twice;
 	m8s_reset(s);
-	printf("%s", prompt);
+	printf("%s>", prompt);
 	twice = 0;
 	while (1)
 	{
 		c = getchar();
-		if (c > 127)
+		if (simple && (c > 127 || c < 1))
 			is_valid = 0;
 		else if (c == '\n' && twice_enter && twice)
 			break;
 		else if (c == '\n' && twice_enter)
 		{
-			printf("%s", prompt);
+			printf("...>");
 			twice = 1;
 		}
 		else if (c == '\n')
@@ -207,10 +212,11 @@ void get_simple_input(m8String *s, char *prompt, int twice_enter)
 			twice = 0;
 		m8s_concatc(s, c);
 	}
+	m8s_rtrim(s);
 	if (!is_valid)
 	{
 		printf("Charachter Not Valid\n");
-		get_simple_input(s, prompt, twice_enter);
+		get_simple_input(s, prompt, twice_enter, simple);
 		return;
 	};
 }
@@ -243,7 +249,7 @@ FILE *get_file_w(m8String *s)
 	FILE *f;
 	do
 	{
-		get_simple_input(s, "Get File Name Inclusive extension(q = quit)>", 0);
+		get_simple_input(s, "Get File Name Inclusive extension(q = quit)", 0, 1);
 		if (strcmp(s->s, "q") == 0)
 			return NULL;
 		f = fopen(s->s, "r");
@@ -253,8 +259,8 @@ FILE *get_file_w(m8String *s)
 			fclose(f);
 			get_simple_input(s_tmp,
 							 "File already existing do you want overwrite it? (y/any "
-							 "other key to denie)>",
-							 0);
+							 "other key to denie)",
+							 0, 1);
 			if (strcmp(s_tmp->s, "y") != 0)
 			{
 
@@ -288,20 +294,20 @@ void create_skeleton(mParser *mp, m8String *s)
 	printf("<code_inside>\n");
 	printf("}\n");
 
-	get_simple_input(s, "Get <ret_val>:", 0);
-	ret_val = strdup(s->s);
-	get_simple_input(s, "Get <arg_list>(brackets inclusive):", 0);
-	arg_list = strdup(s->s);
+	get_simple_input(s, "Get <ret_val>:", 0, 1);
+	ret_val = m8s_strdup(s);
+	get_simple_input(s, "Get <arg_list>(brackets inclusive):", 0, 1);
+	arg_list = m8s_strdup(s);
 	printf("Get <code_inside>(can be multi-line, remember the semicolon and the "
 		   "tabs, twice Enter to accept)\n");
-	get_simple_input(s, ">", 1);
-	code_inside = strdup(s->s);
+	get_simple_input(s, ">", 1, 1);
+	code_inside = m8s_strdup(s);
 	printf("The function prototype is going to be as follow:\n");
 	printf("%s FunctionName %s\n", ret_val, arg_list);
 	printf("{\n");
 	printf("%s", code_inside);
 	printf("}\n");
-	get_simple_input(s, "Is Ok? (any key to continue/n q=quite)", 0);
+	get_simple_input(s, "Is Ok? (any key to continue/n q=quite)", 0, 1);
 	switch (*s->s)
 	{
 
@@ -430,28 +436,29 @@ void create_skeleton(mParser *mp, m8String *s)
 	t2 = clock();
 	printf("Create Skeleton sz=%d kB t=%f\n", (int)(decl->n + jt->n + def->n), F_PAT_TYPE(t2 - t1) / CLOCKS_PER_SEC);
 	f = get_file_w(s);
-	if (!f)
-		goto QUIT;
-	fputs("#include \"mparser.h\"\n\n", f);
-	fputs(decl->s, f);
-	fputs(jt->s, f);
-	fputs(def->s, f);
-	fclose(f);
-QUIT:
+	if (f)
+	{
+		fputs("#include \"mparser.h\"\n\n", f);
+		fputs(decl->s, f);
+		fputs(jt->s, f);
+		fputs(def->s, f);
+		fclose(f);
+	}
 	destroy_mHashtable(h, NULL, NULL);
 	destroy_m8String(jt);
 	destroy_m8String(decl);
 	destroy_m8String(def);
 	destroy_m8String(rl_name);
 	destroy_m8String(f_name);
-
 	free(ret_val);
 	free(arg_list);
 	free(code_inside);
+#ifdef _WIN32
 	system(s->s);
+#endif
 }
 
-//the follow block is happily copied from SQLite 
+// the follow block is happily copied from SQLite
 typedef enum
 {
 	PBCRED = 4,
@@ -502,7 +509,7 @@ int load_fl(m8String *s)
 	fseek(f, 0, SEEK_END);
 	sz = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	m8s_realloc(s, sz+1);
+	m8s_realloc(s, sz + 1);
 	fread(s->s, sizeof(char), sz, f);
 	s->n = sz;
 	s->s[s->n] = '\0';
@@ -560,10 +567,12 @@ void test_mp(mParser *mp, m8String *s)
 int test_hash_tbl()
 {
 	int op = 'i';
-	char key[100] = {0}, value[100] = {0};
-	mHashtable *htbl = new_mHashtable(0, mhash_f_s, mcmp_s);
-	htbl->flags = MHSH_STRDUP_KEY | MHSH_STRDUP_VALUE;
 
+	m8String *key, *value;
+	mHashtable *htbl = new_mHashtable(0, mhash_f_s, mcmp_s);
+	htbl->flags = MHSH_STRDUP_KEY | MHSH_STRDUP_VALUE | MSHS_FREE_STR_KEY_ON_DESTROY | MSHS_FREE_STR_VALUE_ON_DESTROY;
+	key = new_m8String();
+	value = new_m8String();
 	printf("\\i insert\n");
 	printf("\\g get\n");
 	printf("\\p pop\n");
@@ -571,49 +580,55 @@ int test_hash_tbl()
 	printf("\\q quit\n");
 	while (1)
 	{
-		printf("Op %s\n", op == 'i' ? "insert" : op == 'g' ? "get" : "pop");
-		printf("Insert Key:");
-		(void)scanf("%98s", key);
+		printf("Current Operation:");
+		printBold(op == 'i' ? "insert" : op == 'g' ? "get" : "pop", PBCBLUE);
+		printf("\n");
 
-		if (strcmp(key, "\\q") == 0)
+		// void get_simple_input(m8String *s, char *prompt, int twice_enter,int simple)
+		get_simple_input(key, "Insert Key", 0, 0);
+
+		if (strcmp(key->s, "\\q") == 0)
 		{
 			break;
 		}
-		if (strcmp(key, "\\i") == 0)
+		if (strcmp(key->s, "\\i") == 0)
 		{
 			op = 'i';
 			continue;
 		}
-		else if (strcmp(key, "\\g") == 0)
+		else if (strcmp(key->s, "\\g") == 0)
 		{
 			op = 'g';
 			continue;
 		}
 
-		else if (strcmp(key, "\\p") == 0)
+		else if (strcmp(key->s, "\\p") == 0)
 		{
 			op = 'p';
 			continue;
 		}
-		else if (strcmp(key, "\\b") == 0)
+		else if (strcmp(key->s, "\\b") == 0)
 		{
 			int sz, i;
-			char **buf, wrd[15];
+			char **buf;
 			clock_t t1, t2;
 			mHashtable *ht, *conf;
+			get_simple_input(key, "Get Items count", 0, 0);
+			sz = atoi(key->s);
+			if (sz <= 0)
+			{
+				printf("Number not valid\n");
+				continue;
+			}
 			ht = new_mHashtable(10, mhash_f_s, mcmp_s);
 			ht->flags = MHSH_STRDUP_KEY | MHSH_FREE_STR_KEY_ON_POP;
 			conf = new_mHashtable(10, mhash_f_ull, mcmp_ull);
-			printf("Get Items count:");
-
-			(void)scanf("%d", &sz);
-
 			buf = calloc(sz, sizeof(char *));
 			t1 = clock();
 			for (i = 0; i < sz; i++)
 			{
-				get_randchr(i, wrd, sizeof(wrd) - 1);
-				buf[i] = strdup(wrd);
+				get_randchr(i, key, 14);
+				buf[i] = m8s_strdup(key);
 			}
 			t2 = clock();
 			printf("Key array prep:%f\n", (float)(t2 - t1) / CLOCKS_PER_SEC);
@@ -666,7 +681,8 @@ int test_hash_tbl()
 			printf("Conflict study:%f sec\n", F_PAT_TYPE(t2 - t1) / CLOCKS_PER_SEC);
 			for (i = 0; i < conf->lstn; i++)
 			{
-				printf("%d rows have %d collisions\n", (int)conf->lst[i].value.ull, (int)conf->lst[i].key.ull);
+				printf("%d rows have %d collisions for  a total of %d items\n", (int)conf->lst[i].value.ull,
+					   (int)conf->lst[i].key.ull, (int)(conf->lst[i].key.ull * conf->lst[i].value.ull));
 			}
 
 			t1 = clock();
@@ -705,17 +721,16 @@ int test_hash_tbl()
 			free(buf);
 			destroy_mHashtable(ht, NULL, NULL);
 			destroy_mHashtable(conf, NULL, NULL);
+			continue;
 		}
 		else
 		{
-			htbl->i_key.s = key;
+			htbl->i_key.s = key->s;
 
 			if (op == 'i')
 			{
-				printf("Get Value:");
-				(void)scanf("%98s", value);
-
-				htbl->i_val.s = value;
+				get_simple_input(value, "Get Value", 0, 0);
+				htbl->i_val.s = value->s;
 				mhash_insert(htbl);
 			}
 			else if (op == 'g')
@@ -729,13 +744,13 @@ int test_hash_tbl()
 				printf("ROOM\n");
 				break;
 			case MHSH_ERR_EXISTS:
-				printf("Exists %s %s\n", htbl->i_key.s, htbl->i_val.s);
+				printf("Exists %s %s\n", htbl->o_key->s, htbl->o_val->s);
 				break;
 			case MHSH_ERR_NOT_EXISTS:
-				printf("Not Exists %s %s\n", htbl->i_key.s, htbl->i_val.s);
+				printf("Not Exists\n");
 				break;
 			case MHSH_OK:
-				if(htbl->o_key && htbl->o_val)
+				if (htbl->o_key && htbl->o_val)
 					printf("Ok %s %s\n", htbl->o_key->s, htbl->o_val->s);
 				else
 					printf("Err: Output members not setted\n");
@@ -744,10 +759,16 @@ int test_hash_tbl()
 			if (op == 'p' && htbl->err_n == MHSH_OK)
 			{
 				free(htbl->o_key->s);
+				htbl->o_key = NULL;
+
 				free(htbl->o_val->s);
+				htbl->o_val = NULL;
 			}
 		}
 	}
+	destroy_mHashtable(htbl, NULL, NULL);
+	destroy_m8String(key);
+	destroy_m8String(value);
 	return 1;
 }
 void print_err(MP_ERRS err_n)
@@ -789,7 +810,7 @@ void print_err(MP_ERRS err_n)
 void print_tree(mTree *t, m8String *indent, int last)
 {
 	size_t i;
-	m8String *nl = new_m8String();
+	m8String *nl = m8s_clone(indent);
 
 	printf("%s", indent->s);
 	printf("+- ");
@@ -823,7 +844,7 @@ void print_tree(mTree *t, m8String *indent, int last)
 		}
 
 	printf("\n");
-	m8s_concat(nl, indent->s, indent->n);
+
 	if (last)
 		m8s_concats(nl, "  ");
 	else
@@ -838,7 +859,7 @@ ERR:
 void print_treeF(mTree *t, m8String *indent, int last, FILE *f)
 {
 	size_t i;
-	m8String *nl = new_m8String();
+	m8String *nl = m8s_clone(indent);
 
 	fputs(indent->s, f);
 	fputs("+- ", f);
@@ -869,7 +890,6 @@ void print_treeF(mTree *t, m8String *indent, int last, FILE *f)
 	}
 	fputs("\n", f);
 
-	m8s_concat(nl, indent->s, indent->n);
 	if (last)
 		m8s_concats(nl, "  ");
 	else
@@ -901,10 +921,7 @@ void get_str(m8String *s, char *prompt)
 			nl_twice = 0;
 		m8s_concatcm(s, c);
 	}
-
-	while (s->n > 0 && isspace((int)(unsigned char)s->s[s->n - 1]))
-		s->s[--s->n] = '\0';
-
+	m8s_rtrim(s);
 	if (s->n == 0)
 	{
 		get_str(s, prompt);
@@ -1013,7 +1030,10 @@ void create_c_array(char *fname)
 	m8s_concats(s, "\tunsigned char grm_arr[]={\n\t\t");
 	while ((c = fgetc(f)) != EOF)
 	{
+		size_t sv = s->n;
 		m8s_concati(s, c);
+		while (s->n - sv < 5)
+			m8s_concatcm(s, ' ');
 		m8s_concatcm(s, ',');
 		if (++i % 20 == 0)
 		{
@@ -1034,7 +1054,9 @@ void create_c_array(char *fname)
 	}
 	fclose(f);
 	destroy_m8String(s);
+#ifdef _WIN32
 	system(out_fl_name->s);
+#endif
 	destroy_m8String(out_fl_name);
 }
 void save_last_file(char *fname)
@@ -1094,26 +1116,7 @@ void mainloop(mParser **smp, m8String *s, char **fn)
 			printf("Load Tables %f secs\n", F_PAT_TYPE(t2 - t1) / CLOCKS_PER_SEC);
 			continue;
 		}
-		if (strcmp(s->s, "\\h") == 0)
-		{
-			print_help();
-			continue;
-		}
-		if (strcmp(s->s, "\\n") == 0)
-		{
-			navigate(mp->out_tree, s, "Get Node");
-			continue;
-		}
-		if (strcmp(s->s, "\\s") == 0)
-		{
-			create_skeleton(mp, s);
-			continue;
-		}
-		if (strcmp(s->s, "\\a") == 0)
-		{
-			create_c_array(*fn);
-			continue;
-		}
+		
 		if (strcmp(s->s, "\\o") == 0)
 		{
 			if (mp->out_tree)
@@ -1141,8 +1144,8 @@ void mainloop(mParser **smp, m8String *s, char **fn)
 
 				get_simple_input(s_tmp,
 								 "File already existing do you want overwrite it? "
-								 "(y/any other key to denie)>",
-								 0);
+								 "(y/any other key to denie)",
+								 0, 0);
 				if (strcmp(s_tmp->s, "y") != 0)
 				{
 					fclose(fout);
@@ -1162,17 +1165,21 @@ void mainloop(mParser **smp, m8String *s, char **fn)
 			print_treeF(mp->out_tree, s_tmp, 1, fout);
 			fclose(fout);
 			destroy_m8String(s_tmp);
+#ifdef _WIN32
 			system(s->s + 3);
+#endif
 			continue;
 		}
-		if (strncmp(s->s, "\\i ", 3) == 0)
-			if (!load_fl(s))
+		if (strncmp(s->s, "\\i ", 3) == 0)	
+			if (!load_fl(s))	
 				continue;
-		if (strcmp(s->s, "\\t") == 0)
-		{
-			test_mp(mp, s);
-			continue;
-		}
+//clang-format off
+		if (strcmp(s->s, "\\t") == 0){test_mp(mp, s);				continue;}
+		if (strcmp(s->s, "\\h") == 0){print_help();				continue;}
+		if (strcmp(s->s, "\\n") == 0){navigate(mp->out_tree, s, "Get Node");	continue;}
+		if (strcmp(s->s, "\\s") == 0){create_skeleton(mp, s);			continue;}
+		if (strcmp(s->s, "\\a") == 0){create_c_array(*fn);			continue;}
+//clang-format on
 #if MP_CODING == MP_UNICODE
 		mU16String *u16s = new_mU16String();
 		m8s_to_mU16s(s, u16s);
@@ -1210,6 +1217,140 @@ void mainloop(mParser **smp, m8String *s, char **fn)
 	}
 }
 
+#define _LOC_READ_BUF 10
+int test_rep()
+{
+	m8String *s = new_m8String();
+	while (1)
+	{
+		printf("\\r replace\n");
+		printf("\\d diact transliteration\n");
+		printf("\\q quit\n");
+		get_simple_input(s, "", 0, 1);
+		if (strcmp(s->s, "\\r") == 0)
+		{
+			m8String *from, *to;
+			from = new_m8String();
+			to = new_m8String();
+
+			while (1)
+			{
+				get_simple_input(s, "Insert Text (\\q quit)", 0, 0);
+				if (strcmp(s->s, "\\q") == 0)
+					break;
+				get_simple_input(from, "From", 0, 0);
+				get_simple_input(to, "To (\\e empty string)", 0, 0);
+				if (strcmp(to->s, "\\e") == 0)
+					m8s_replace(s, from->s, "");
+				else
+					m8s_replace(s, from->s, to->s);
+				printf("%s\n len %d\n;", s->s, (int)s->n);
+			}
+			destroy_m8String(from);
+			destroy_m8String(to);
+		}
+		else if (strcmp(s->s, "\\d") == 0)
+		{
+			char from[10], to[10], *cur;
+			int c;
+			while (1)
+			{
+				get_simple_input(s, "Inset Text (\\q quit)", 0, 0);
+				if (strcmp(s->s, "\\q") == 0)
+					break;
+				cur = s->s;
+				while ((c = read_utf8_seq(cur, from)))
+				{
+					if (c > 1)
+					{
+						/// s can be realloc'ed so cur can not be a valid pointer
+						size_t old_len = cur - s->s;
+						if (!transliterate_diac(from, to))
+						{
+							printf("Char %s not present\n", from);
+							break;
+						}
+						m8s_replace(s, from, to);
+						cur = s->s + old_len;
+						c = (int)strlen(to);
+					}
+					if (c > 0)
+						cur += c;
+					else
+						cur -= c;
+				}
+				printf("%s\n", s->s);
+			}
+		}
+		else if (strcmp(s->s, "\\q") == 0)
+			break;
+		else
+			printf("Not valid choose\n");
+	}
+	destroy_m8String(s);
+	return 1;
+}
+
+/*
+int read_tk(FILE *f,char ans [_LOC_READ_BUF])
+{
+	int c,len=0;
+	char *cur=ans;
+	while((c=fgetc(f))!='\'')
+	{
+		*cur++=c;
+		len++;
+		if(len+1>=_LOC_READ_BUF)
+		{
+			printf("Need a bigger buffer\n");
+			return 0;
+		}
+	}
+	*cur='\0';
+	return 1;
+}
+int tmp()
+{
+	FILE * f, *out;
+	char diac[_LOC_READ_BUF];
+	f=fopen("diac","r");
+	out=fopen("out.c","wb");
+	int c,n;
+	if(!f)
+	{
+	 printf("cannot open file diac\n");
+	 return 0;
+	}
+	n=0;
+	while((c=fgetc(f))!=EOF   )
+	{
+		if( c!='\'')
+			continue;
+
+		if(!read_tk(f,diac))
+			return 0;
+		fputs("{\"",out);
+		fputs(diac,out);
+		while((c=fgetc(f))!='\'')
+			;
+		if(!read_tk(f,diac))
+			return 0;
+		fputs("\",\"",out);
+		fputs(diac,out);
+		fputs("\"},",out);
+		if(++n==10)
+		{
+			fputs("\n",out);
+			n=0;
+		}
+
+	}
+
+	fclose(f);
+	fclose(out);
+	return 1;
+}
+*/
 int main()
 {
 #ifdef DHASH_H_INCLUDED
@@ -1219,6 +1360,8 @@ int main()
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
 #endif
+	//test_hash_tbl();
+	test_rep();
 	mParser *mp = NULL;
 	clock_t t1, t2;
 	FILE *f;
@@ -1246,7 +1389,7 @@ int main()
 		printf("Get .egt file q=quite");
 		if (fname)
 			printf("[%s]", fname);
-		get_simple_input(s, ">", 0);
+		get_simple_input(s, "", 0, 1);
 		if (strcmp(s->s, "q") == 0)
 			break;
 		if (s->n)

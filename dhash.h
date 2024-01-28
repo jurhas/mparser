@@ -1,7 +1,7 @@
-///This program is distribuited under the licence GPL-3.0
-///I have not so much requirement, just alert me if you find
-///some bugs: spanu_andrea(at)yahoo.it 
-///ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
+/// This program is distribuited under the licence GPL-3.0
+/// I have not so much requirement, just alert me if you find
+/// some bugs: spanu_andrea(at)yahoo.it
+/// ah I am a man, I am italian do not send me nudes please, unless you are a girl of course.
 
 #ifndef DHASH_H_INCLUDED
 #define DHASH_H_INCLUDED
@@ -15,6 +15,7 @@ void *drealloc(void *p, size_t sz, char *file, int line);
 char *dstrdup(const char *s, char *file, int line);
 wchar_t *dwcsdup(const wchar_t *s, char *file, int line);
 void dfree(void *p);
+void dcomment(void *p, char *cmt);
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4996)
