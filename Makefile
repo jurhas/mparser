@@ -14,11 +14,13 @@ FDEPS =$(_DEPS)
 _OBJ =  mparser.o dhash.o main.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
+all:mparser
 
 $(ODIR)/%.o: %.c $(FDEPS)
+	mkdir -p $(ODIR)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-mparser: $(OBJ)
+mparser: $(OBJ)	
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean

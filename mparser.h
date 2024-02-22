@@ -102,6 +102,8 @@ typedef struct _mhashtable
 	mValue i_val;
 	mValue *o_key;
 	mValue *o_val;
+	mValue _private_k; //these two values contains the value when you remove an item, I have to release the list and I need some place
+	mValue _private_v; //to store it. The first solution of a static variable inside the pop() function is not good, since this function is shared from all the hashtables. So if more hashtables pops consequently, their output get syncronized...yap, my first need was with a single hashtable,bad idea. If you free() their value and don't want pending addresses just memset(ht->o_key,0,sizeof(mValue)), without access the member, if you are lazy  ht->o_key->v=NULL; and if you want sleep the night comfortablu ht->o_key=NULL;   
 	MHSH_RES_VALUE err_n;
 	int flags;
 	mfree_f fk_f;

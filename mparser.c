@@ -341,7 +341,6 @@ MHSH_RES_VALUE mhash_pop(mHashtable *htbl)
 {
 	size_t c_hsh;
 	mHList *cur, *prev_cur;
-	static mHList clone;
 	htbl->err_n = MHSH_OK;
 	htbl->o_key = NULL;
 	htbl->o_val = NULL;
@@ -387,9 +386,10 @@ MHSH_RES_VALUE mhash_pop(mHashtable *htbl)
 		free(cur->value.s);
 		memset(&cur->value, 0, sizeof(mValue));
 	}
-	clone = *cur;
-	htbl->o_key = &clone.key;
-	htbl->o_val = &clone.value;
+	htbl->_private_k = cur->key;
+	htbl->_private_v = cur->value;
+	htbl->o_key = &htbl->_private_k;
+	htbl->o_val = &htbl->_private_v;
 	memset(cur, 0, sizeof(mHList));
 	return htbl->err_n;
 }
